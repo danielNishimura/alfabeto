@@ -6,7 +6,8 @@ const clearButton = document.getElementById('clear');
 const nextLetterButton = document.getElementById('nextLetter');
 const letterDisplay = document.getElementById('letter-display');
 
-const alphabetLower = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
+// Alfabeto em caixa alta (letras maiúsculas)
+const alphabetUpper = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 let currentLetterIndex = 0;
 let isDrawing = false;
 let lastX = 0;
@@ -29,7 +30,7 @@ function drawLetter(letter) {
     ctxLetter.clearRect(0, 0, letterCanvas.width, letterCanvas.height); // Limpar canvas antes de desenhar a próxima letra
 
     // Definir a fonte para Arial (usando um tamanho maior)
-    ctxLetter.font = '100px Arial'; // Usando Arial para letras minúsculas
+    ctxLetter.font = '100px Arial'; // Usando Arial para letras maiúsculas
     ctxLetter.textAlign = 'center'; // Alinhar o texto ao centro horizontalmente
     ctxLetter.textBaseline = 'middle'; // Alinhar o texto ao centro verticalmente
 
@@ -37,7 +38,7 @@ function drawLetter(letter) {
     const x = letterCanvas.width / 2; // Posição central horizontal
     const y = letterCanvas.height / 2; // Posição central vertical
 
-    // Desenhar a letra minúscula no centro do canvas
+    // Desenhar a letra maiúscula no centro do canvas
     ctxLetter.fillText(letter, x, y); 
 }
 
@@ -131,13 +132,13 @@ clearButton.addEventListener('click', () => {
 
 // Mudar para a próxima letra
 nextLetterButton.addEventListener('click', () => {
-    currentLetterIndex = (currentLetterIndex + 1) % alphabetLower.length;
-    const nextLetter = alphabetLower[currentLetterIndex];
+    currentLetterIndex = (currentLetterIndex + 1) % alphabetUpper.length;
+    const nextLetter = alphabetUpper[currentLetterIndex];
     drawLetter(nextLetter);
     letterDisplay.textContent = `Letra: ${nextLetter}`;
 });
 
 // Inicializar com a primeira letra
-const firstLetter = alphabetLower[currentLetterIndex];
+const firstLetter = alphabetUpper[currentLetterIndex];
 drawLetter(firstLetter);
 letterDisplay.textContent = `Letra: ${firstLetter}`;
