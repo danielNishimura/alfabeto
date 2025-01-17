@@ -6,6 +6,7 @@ const clearButton = document.getElementById('clear');
 const nextLetterButton = document.getElementById('nextLetter');
 const letterDisplay = document.getElementById('letter-display');
 
+// Alfabeto em caixa baixa (letras minúsculas)
 const alphabetLower = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
 let currentLetterIndex = 0;
 let isDrawing = false;
@@ -42,6 +43,14 @@ function drawLetter(letter) {
 }
 
 // Função para obter as coordenadas corretas no canvas
+function getTouchPos(canvas, event) {
+    const rect = canvas.getBoundingClientRect(); // Obter o tamanho do canvas
+    const x = event.touches[0].clientX - rect.left; // Calcular a posição X relativa ao canvas
+    const y = event.touches[0].clientY - rect.top; // Calcular a posição Y relativa ao canvas
+    return { x, y };
+}
+
+// Função para obter a posição do mouse (para dispositivos desktop)
 function getMousePos(canvas, event) {
     const rect = canvas.getBoundingClientRect(); // Obter o tamanho do canvas
     const x = event.clientX - rect.left; // Calcular a posição X relativa ao canvas
@@ -49,17 +58,17 @@ function getMousePos(canvas, event) {
     return { x, y };
 }
 
-// Desenho com o mouse no canvas de desenho
-drawCanvas.addEventListener('mousedown', (e) => {
+// Eventos para desenho com o mouse (para desktop)
+function startDrawing(e) {
     isDrawing = true;
-    const pos = getMousePos(drawCanvas, e);
+    const pos = getMousePos(drawCanvas, e); // Para mouse
     lastX = pos.x;
     lastY = pos.y;
-});
+}
 
-drawCanvas.addEventListener('mousemove', (e) => {
+function draw(e) {
     if (!isDrawing) return;
-    const pos = getMousePos(drawCanvas, e);
+    const pos = getMousePos(drawCanvas, e); // Para mouse
     const currentX = pos.x;
     const currentY = pos.y;
 
@@ -70,15 +79,51 @@ drawCanvas.addEventListener('mousemove', (e) => {
 
     lastX = currentX;
     lastY = currentY;
-});
+}
 
-drawCanvas.addEventListener('mouseup', () => {
+function stopDrawing() {
     isDrawing = false;
-});
+}
 
-drawCanvas.addEventListener('mouseout', () => {
+// Função para permitir o toque no canvas
+function startDrawingTouch(e) {
+    e.preventDefault();  // Impede o comportamento padrão, como o zoom, no dispositivo móvel
+    isDrawing = true;
+    const pos = getTouchPos(drawCanvas, e); // Para toque
+    lastX = pos.x;
+    lastY = pos.y;
+}
+
+function drawTouch(e) {
+    if (!isDrawing) return;
+    const pos = getTouchPos(drawCanvas, e); // Para toque
+    const currentX = pos.x;
+    const currentY = pos.y;
+
+    ctxDraw.beginPath();
+    ctxDraw.moveTo(lastX, lastY);
+    ctxDraw.lineTo(currentX, currentY);
+    ctxDraw.stroke();
+
+    lastX = currentX;
+    lastY = currentY;
+}
+
+function stopDrawingTouch() {
     isDrawing = false;
-});
+}
+
+// Adicionar eventos de toque (para dispositivos móveis)
+drawCanvas.addEventListener('touchstart', startDrawingTouch, false);
+drawCanvas.addEventListener('touchmove', drawTouch, false);
+drawCanvas.addEventListener('touchend', stopDrawingTouch, false);
+drawCanvas.addEventListener('touchcancel', stopDrawingTouch, false);
+
+// Adicionar eventos de mouse (para dispositivos desktop)
+drawCanvas.addEventListener('mousedown', startDrawing, false);
+drawCanvas.addEventListener('mousemove', draw, false);
+drawCanvas.addEventListener('mouseup', stopDrawing, false);
+drawCanvas.addEventListener('mouseout', stopDrawing, false);
 
 // Limpar o canvas de desenho
 clearButton.addEventListener('click', () => {

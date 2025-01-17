@@ -6,7 +6,7 @@ const clearButton = document.getElementById('clear');
 const nextLetterButton = document.getElementById('nextLetter');
 const letterDisplay = document.getElementById('letter-display');
 
-const alphabet = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+const alphabetLower = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
 let currentLetterIndex = 0;
 let isDrawing = false;
 let lastX = 0;
@@ -23,14 +23,13 @@ ctxDraw.lineWidth = 5;
 ctxDraw.lineJoin = 'round';
 ctxDraw.lineCap = 'round';
 ctxDraw.strokeStyle = '#333';
-ctxDraw.font = '60px "Dancing Script", cursive';
+ctxDraw.font = '60px Arial';  // Usando a fonte Arial (padrão)
 
-// Função para desenhar a letra no canvas de exibição
 function drawLetter(letter) {
     ctxLetter.clearRect(0, 0, letterCanvas.width, letterCanvas.height); // Limpar canvas antes de desenhar a próxima letra
 
-    // Definir uma fonte maior
-    ctxLetter.font = '100px "Arial'; // Aumentando o tamanho da fonte
+    // Definir a fonte para Arial (usando um tamanho maior)
+    ctxLetter.font = '100px Arial'; // Usando Arial para letras minúsculas
     ctxLetter.textAlign = 'center'; // Alinhar o texto ao centro horizontalmente
     ctxLetter.textBaseline = 'middle'; // Alinhar o texto ao centro verticalmente
 
@@ -38,11 +37,19 @@ function drawLetter(letter) {
     const x = letterCanvas.width / 2; // Posição central horizontal
     const y = letterCanvas.height / 2; // Posição central vertical
 
-    // Desenhar a letra cursiva no centro do canvas
+    // Desenhar a letra minúscula no centro do canvas
     ctxLetter.fillText(letter, x, y); 
 }
 
 // Função para obter as coordenadas corretas no canvas
+function getTouchPos(canvas, event) {
+    const rect = canvas.getBoundingClientRect(); // Obter o tamanho do canvas
+    const x = event.touches[0].clientX - rect.left; // Calcular a posição X relativa ao canvas
+    const y = event.touches[0].clientY - rect.top; // Calcular a posição Y relativa ao canvas
+    return { x, y };
+}
+
+// Função para obter a posição do mouse (para dispositivos desktop)
 function getMousePos(canvas, event) {
     const rect = canvas.getBoundingClientRect(); // Obter o tamanho do canvas
     const x = event.clientX - rect.left; // Calcular a posição X relativa ao canvas
@@ -50,17 +57,17 @@ function getMousePos(canvas, event) {
     return { x, y };
 }
 
-// Desenho com o mouse no canvas de desenho
-drawCanvas.addEventListener('mousedown', (e) => {
+// Eventos para desenho com o mouse (para desktop)
+function startDrawing(e) {
     isDrawing = true;
-    const pos = getMousePos(drawCanvas, e);
+    const pos = getMousePos(drawCanvas, e); // Para mouse
     lastX = pos.x;
     lastY = pos.y;
-});
+}
 
-drawCanvas.addEventListener('mousemove', (e) => {
+function draw(e) {
     if (!isDrawing) return;
-    const pos = getMousePos(drawCanvas, e);
+    const pos = getMousePos(drawCanvas, e); // Para mouse
     const currentX = pos.x;
     const currentY = pos.y;
 
@@ -71,15 +78,51 @@ drawCanvas.addEventListener('mousemove', (e) => {
 
     lastX = currentX;
     lastY = currentY;
-});
+}
 
-drawCanvas.addEventListener('mouseup', () => {
+function stopDrawing() {
     isDrawing = false;
-});
+}
 
-drawCanvas.addEventListener('mouseout', () => {
+// Função para permitir o toque no canvas
+function startDrawingTouch(e) {
+    e.preventDefault();  // Impede o comportamento padrão, como o zoom, no dispositivo móvel
+    isDrawing = true;
+    const pos = getTouchPos(drawCanvas, e); // Para toque
+    lastX = pos.x;
+    lastY = pos.y;
+}
+
+function drawTouch(e) {
+    if (!isDrawing) return;
+    const pos = getTouchPos(drawCanvas, e); // Para toque
+    const currentX = pos.x;
+    const currentY = pos.y;
+
+    ctxDraw.beginPath();
+    ctxDraw.moveTo(lastX, lastY);
+    ctxDraw.lineTo(currentX, currentY);
+    ctxDraw.stroke();
+
+    lastX = currentX;
+    lastY = currentY;
+}
+
+function stopDrawingTouch() {
     isDrawing = false;
-});
+}
+
+// Adicionar eventos de toque (para dispositivos móveis)
+drawCanvas.addEventListener('touchstart', startDrawingTouch, false);
+drawCanvas.addEventListener('touchmove', drawTouch, false);
+drawCanvas.addEventListener('touchend', stopDrawingTouch, false);
+drawCanvas.addEventListener('touchcancel', stopDrawingTouch, false);
+
+// Adicionar eventos de mouse (para dispositivos desktop)
+drawCanvas.addEventListener('mousedown', startDrawing, false);
+drawCanvas.addEventListener('mousemove', draw, false);
+drawCanvas.addEventListener('mouseup', stopDrawing, false);
+drawCanvas.addEventListener('mouseout', stopDrawing, false);
 
 // Limpar o canvas de desenho
 clearButton.addEventListener('click', () => {
@@ -88,13 +131,13 @@ clearButton.addEventListener('click', () => {
 
 // Mudar para a próxima letra
 nextLetterButton.addEventListener('click', () => {
-    currentLetterIndex = (currentLetterIndex + 1) % alphabet.length;
-    const nextLetter = alphabet[currentLetterIndex];
+    currentLetterIndex = (currentLetterIndex + 1) % alphabetLower.length;
+    const nextLetter = alphabetLower[currentLetterIndex];
     drawLetter(nextLetter);
     letterDisplay.textContent = `Letra: ${nextLetter}`;
 });
 
 // Inicializar com a primeira letra
-const firstLetter = alphabet[currentLetterIndex];
+const firstLetter = alphabetLower[currentLetterIndex];
 drawLetter(firstLetter);
 letterDisplay.textContent = `Letra: ${firstLetter}`;
